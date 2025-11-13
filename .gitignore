@@ -10,6 +10,7 @@ coverage/
 # Production
 dist/
 build/
+.next/
 *.log
 
 # Environment
