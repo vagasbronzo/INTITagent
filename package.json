@@ -1,0 +1,19 @@
+{
+  "name": "intitagent",
+  "version": "1.0.0",
+  "private": true,
+  "description": "INTIT AI Agent - On-premise AI assistant for Business Cube",
+  "scripts": {
+    "dev": "pnpm -r --parallel dev",
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "lint": "pnpm -r lint"
+  },
+  "keywords": ["ai", "agent", "rag", "business-cube"],
+  "author": "INTIT",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0",
+    "pnpm": ">=8.0.0"
+  }
+}
