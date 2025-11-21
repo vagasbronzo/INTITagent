@@ -2,6 +2,20 @@ import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import { INTITAgent } from '@intitagent/agent-core';
 
+// Type definitions for API routes
+interface QueryRequestBody {
+  query: string;
+  context?: string;
+}
+
+interface GenerateQueryRequestBody {
+  description: string;
+}
+
+interface SchemaRouteParams {
+  table?: string;
+}
+
 const fastify = Fastify({
   logger: true
 });
@@ -21,7 +35,7 @@ fastify.get('/health', async (request, reply) => {
 
 // Query endpoint
 fastify.post<{
-  Body: { query: string; context?: string };
+  Body: QueryRequestBody;
 }>('/api/query', async (request, reply) => {
   try {
     const { query, context } = request.body;
@@ -40,7 +54,7 @@ fastify.post<{
 
 // Schema endpoint
 fastify.get<{
-  Params: { table?: string };
+  Params: SchemaRouteParams;
 }>('/api/schema/:table?', async (request, reply) => {
   try {
     const { table } = request.params;
@@ -54,7 +68,7 @@ fastify.get<{
 
 // Query generation endpoint
 fastify.post<{
-  Body: { description: string };
+  Body: GenerateQueryRequestBody;
 }>('/api/generate-query', async (request, reply) => {
   try {
     const { description } = request.body;

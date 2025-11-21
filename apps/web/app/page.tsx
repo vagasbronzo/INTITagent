@@ -2,13 +2,15 @@
 
 import { useState } from 'react';
 
+interface AgentResponse {
+  answer: string;
+  confidence: number;
+  sources?: string[];
+}
+
 export default function Home() {
   const [query, setQuery] = useState('');
-  const [response, setResponse] = useState<{
-    answer: string;
-    confidence: number;
-    sources?: string[];
-  } | null>(null);
+  const [response, setResponse] = useState<AgentResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
