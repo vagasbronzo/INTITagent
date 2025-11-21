@@ -20,9 +20,11 @@ fastify.get('/health', async (request, reply) => {
 });
 
 // Query endpoint
-fastify.post('/api/query', async (request, reply) => {
+fastify.post<{
+  Body: { query: string; context?: string };
+}>('/api/query', async (request, reply) => {
   try {
-    const { query, context } = request.body as any;
+    const { query, context } = request.body;
     
     if (!query) {
       return reply.code(400).send({ error: 'Query is required' });
@@ -30,26 +32,32 @@ fastify.post('/api/query', async (request, reply) => {
 
     const response = await agent.query({ query, context });
     return response;
-  } catch (error: any) {
-    return reply.code(500).send({ error: error.message });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return reply.code(500).send({ error: message });
   }
 });
 
 // Schema endpoint
-fastify.get('/api/schema/:table?', async (request, reply) => {
+fastify.get<{
+  Params: { table?: string };
+}>('/api/schema/:table?', async (request, reply) => {
   try {
-    const { table } = request.params as any;
+    const { table } = request.params;
     const schema = await agent.getCubeSchema(table);
     return schema;
-  } catch (error: any) {
-    return reply.code(500).send({ error: error.message });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return reply.code(500).send({ error: message });
   }
 });
 
 // Query generation endpoint
-fastify.post('/api/generate-query', async (request, reply) => {
+fastify.post<{
+  Body: { description: string };
+}>('/api/generate-query', async (request, reply) => {
   try {
-    const { description } = request.body as any;
+    const { description } = request.body;
     
     if (!description) {
       return reply.code(400).send({ error: 'Description is required' });
@@ -57,8 +65,9 @@ fastify.post('/api/generate-query', async (request, reply) => {
 
     const query = await agent.generateQueryExample(description);
     return { query };
-  } catch (error: any) {
-    return reply.code(500).send({ error: error.message });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return reply.code(500).send({ error: message });
   }
 });
 

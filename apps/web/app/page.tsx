@@ -4,7 +4,11 @@ import { useState } from 'react';
 
 export default function Home() {
   const [query, setQuery] = useState('');
-  const [response, setResponse] = useState<any>(null);
+  const [response, setResponse] = useState<{
+    answer: string;
+    confidence: number;
+    sources?: string[];
+  } | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -30,8 +34,8 @@ export default function Home() {
 
       const data = await res.json();
       setResponse(data);
-    } catch (err: any) {
-      setError(err.message || 'An error occurred');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
