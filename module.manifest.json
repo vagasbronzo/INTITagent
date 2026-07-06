@@ -1,0 +1,57 @@
+{
+  "id": "intit-agent",
+  "name": "INTIT Agent / Quista AI",
+  "repo": "vagasbronzo/INTITagent",
+  "type": "vertical-module",
+  "owner": "Astralyon OS",
+  "status": "planned-integration",
+  "version": "0.1.0",
+  "deployment": {
+    "mode": "on-prem-compatible",
+    "basePath": "/ia",
+    "localConsole": "http://srvnts/ia",
+    "documentShare": "//srvnts/ia"
+  },
+  "entrypoints": {
+    "web": "/modules/intit-agent",
+    "api": "/api/modules/intit-agent",
+    "health": "/api/modules/intit-agent/health",
+    "ingest": "/api/modules/intit-agent/ingest",
+    "query": "/api/modules/intit-agent/query"
+  },
+  "capabilities": [
+    "faq",
+    "ticketing",
+    "document-repository",
+    "business-cube-readonly",
+    "business-one-readonly",
+    "invoice-reconciliation",
+    "ddt-support",
+    "orders-support",
+    "products-support",
+    "on-prem-deploy"
+  ],
+  "priority_order": [
+    "faq-ticketing",
+    "documentation-rag",
+    "business-cube-schemas",
+    "business-one-readonly",
+    "invoice-reconciliation",
+    "transactional-dashboards"
+  ],
+  "data_policy": {
+    "stores_sensitive_data": false,
+    "default_access": "read-only",
+    "tenant_isolation": true,
+    "requires_audit_log": true,
+    "write_actions_require_explicit_approval": true
+  },
+  "environment": [
+    "ASTRALYON_CONTROL_PLANE_URL",
+    "ASTRALYON_TENANT_ID",
+    "INTIT_BASE_PATH",
+    "BUSINESS_CUBE_READONLY_DSN",
+    "BUSINESS_ONE_READONLY_DSN",
+    "DOCUMENT_SHARE_PATH"
+  ]
+}
