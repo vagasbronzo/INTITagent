@@ -30,14 +30,9 @@ The user experience must be one simple operational console:
 
 ## Deployment target
 
-Original target remains supported:
+On-prem deployment coordinates, internal hostnames, shares and environment-specific network details are **not stored in the repository**. They must be supplied through protected deployment configuration and secret-management systems.
 
-```txt
-web: http://srvnts/ia
-api: http://srvnts/ia/api
-basePath: /ia
-document share: //srvnts/ia
-```
+The application supports a configurable base path and private network deployment without embedding internal infrastructure coordinates in source control.
 
 ## Monorepo target structure
 
@@ -96,7 +91,8 @@ Astralyon OS should use the manifest to register INTIT Agent as a vertical modul
 - tenant isolation required;
 - every answer grounded in documents should show citations;
 - every connector call should create an audit record;
-- write actions require explicit approval.
+- write actions require explicit approval;
+- internal hostnames, shares and credentials must never be committed.
 
 ## Development quickstart
 
