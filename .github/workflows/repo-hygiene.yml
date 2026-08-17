@@ -1,0 +1,114 @@
+name: Repository Security & Hygiene
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  schedule:
+    - cron: '17 4 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: repo-hygiene-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  hygiene:
+    name: Security, dead code and duplication
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Reject tracked secrets and private key material
+        shell: bash
+        run: |
+          set -euo pipefail
+          bad="$(git ls-files | grep -E '(^|/)(\.env($|\.)|id_rsa($|\.)|credentials\.json$|secrets?\.ya?ml$)|\.(pem|key|p12|pfx)$' | grep -Ev '(\.env\.(example|sample|template)$|\.example$|\.sample$)' || true)"
+          if [ -n "$bad" ]; then
+            echo 'Tracked secret-like files are forbidden:'
+            echo "$bad"
+            exit 1
+          fi
+          if git grep -nEI 'dangerouslyAllowBrowser[[:space:]]*:[[:space:]]*true|VITE_(OPENAI|ANTHROPIC|GROQ|MISTRAL)_API_KEY|NEXT_PUBLIC_(OPENAI|ANTHROPIC|GROQ|MISTRAL)_API_KEY|-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----' -- '*.js' '*.jsx' '*.ts' '*.tsx' '*.mjs' '*.cjs' '*.env*' 2>/dev/null; then
+            echo 'Potential browser-exposed provider secret or private key pattern detected.'
+            exit 1
+          fi
+
+      - name: Setup Node
+        if: ${{ hashFiles('package.json') != '' }}
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '22'
+
+      - name: Reproducible install
+        if: ${{ hashFiles('package.json') != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
+            npm ci --ignore-scripts
+          else
+            echo 'package.json exists without an npm lockfile. Reproducible dependency resolution is required.'
+            exit 1
+          fi
+
+      - name: Dependency vulnerability gate
+        if: ${{ hashFiles('package-lock.json', 'npm-shrinkwrap.json') != '' }}
+        run: npm audit --audit-level=high --omit=dev
+
+      - name: Existing quality gates
+        if: ${{ hashFiles('package.json') != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run lint --if-present
+          npm run typecheck --if-present
+          npm run type-check --if-present
+          npm run build --if-present
+
+      - name: Dead code and unused dependency gate
+        if: ${{ hashFiles('package.json') != '' }}
+        run: npx --yes knip@6.32.2
+
+      - name: Significant duplicate-code gate
+        if: ${{ hashFiles('package.json') != '' }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx --yes jscpd@5.0.15 --threshold 0 --min-lines 12 --min-tokens 100 --ignore '**/node_modules/**,**/dist/**,**/dist-ssr/**,**/build/**,**/.next/**,**/coverage/**,**/public/**' .
+
+      - name: Exact duplicate source-file gate
+        shell: python
+        run: |
+          import hashlib
+          from pathlib import Path
+          import sys
+
+          roots = [Path(p) for p in ('src', 'app', 'apps', 'packages', 'services') if Path(p).exists()]
+          exts = {'.js', '.jsx', '.ts', '.tsx', '.mjs', '.cjs', '.py', '.go', '.rs', '.java', '.css', '.scss'}
+          skip = {'node_modules', 'dist', 'dist-ssr', 'build', '.next', 'coverage', '.git', 'generated', 'vendor'}
+          hashes = {}
+          for root in roots:
+              for path in root.rglob('*'):
+                  if not path.is_file() or path.suffix.lower() not in exts or any(part in skip for part in path.parts):
+                      continue
+                  data = path.read_bytes()
+                  if not data.strip():
+                      continue
+                  digest = hashlib.sha256(data).hexdigest()
+                  hashes.setdefault(digest, []).append(str(path))
+          duplicates = [paths for paths in hashes.values() if len(paths) > 1]
+          if duplicates:
+              print('Exact duplicate source files detected:')
+              for group in duplicates:
+                  print('  ' + ' == '.join(group))
+              sys.exit(1)
+          print('No exact duplicate source files detected.')
