@@ -8,9 +8,8 @@
   "version": "0.1.0",
   "deployment": {
     "mode": "on-prem-compatible",
-    "basePath": "/ia",
-    "localConsole": "http://srvnts/ia",
-    "documentShare": "//srvnts/ia"
+    "basePathEnv": "INTIT_BASE_PATH",
+    "networkCoordinates": "runtime-secret-config-only"
   },
   "entrypoints": {
     "web": "/modules/intit-agent",
@@ -44,7 +43,8 @@
     "default_access": "read-only",
     "tenant_isolation": true,
     "requires_audit_log": true,
-    "write_actions_require_explicit_approval": true
+    "write_actions_require_explicit_approval": true,
+    "internal_network_coordinates_in_repo": false
   },
   "environment": [
     "ASTRALYON_CONTROL_PLANE_URL",
