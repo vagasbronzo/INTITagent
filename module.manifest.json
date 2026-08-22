@@ -1,22 +1,20 @@
 {
   "id": "intit-agent",
-  "name": "INTIT Agent / Quista AI",
+  "name": "YEAH! Business",
   "repo": "vagasbronzo/INTITagent",
   "type": "vertical-module",
-  "owner": "Astralyon OS",
-  "status": "planned-integration",
-  "version": "0.1.0",
+  "owner": "YEAH! OS",
+  "status": "contract-implemented",
+  "version": "0.2.0",
   "deployment": {
     "mode": "on-prem-compatible",
-    "basePathEnv": "INTIT_BASE_PATH",
+    "basePathEnv": "YEAH_BUSINESS_BASE_PATH",
+    "runtimeBaseUrlEnv": "YEAH_BUSINESS_BASE_URL",
     "networkCoordinates": "runtime-secret-config-only"
   },
   "entrypoints": {
-    "web": "/modules/intit-agent",
-    "api": "/api/modules/intit-agent",
-    "health": "/api/modules/intit-agent/health",
-    "ingest": "/api/modules/intit-agent/ingest",
-    "query": "/api/modules/intit-agent/query"
+    "health": "/api/health",
+    "capabilities": "/api/capabilities"
   },
   "capabilities": [
     "faq",
@@ -25,18 +23,7 @@
     "business-cube-readonly",
     "business-one-readonly",
     "invoice-reconciliation",
-    "ddt-support",
-    "orders-support",
-    "products-support",
     "on-prem-deploy"
-  ],
-  "priority_order": [
-    "faq-ticketing",
-    "documentation-rag",
-    "business-cube-schemas",
-    "business-one-readonly",
-    "invoice-reconciliation",
-    "transactional-dashboards"
   ],
   "data_policy": {
     "stores_sensitive_data": false,
@@ -46,10 +33,15 @@
     "write_actions_require_explicit_approval": true,
     "internal_network_coordinates_in_repo": false
   },
+  "security": {
+    "moduleTokenEnv": "YEAH_BUSINESS_MODULE_TOKEN",
+    "callerRole": "control-plane",
+    "publicDataOperations": false,
+    "failClosed": true
+  },
   "environment": [
-    "ASTRALYON_CONTROL_PLANE_URL",
-    "ASTRALYON_TENANT_ID",
-    "INTIT_BASE_PATH",
+    "YEAH_BUSINESS_MODULE_TOKEN",
+    "YEAH_BUSINESS_BASE_PATH",
     "BUSINESS_CUBE_READONLY_DSN",
     "BUSINESS_ONE_READONLY_DSN",
     "DOCUMENT_SHARE_PATH"
