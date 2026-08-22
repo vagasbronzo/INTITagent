@@ -1,104 +1,66 @@
-# INTIT Agent / Quista AI
+# YEAH! Business
 
-INTIT Agent is the **INTIT / Quista vertical module** for Astralyon OS.
+YEAH! Business is the enterprise operations module of **YEAH! OS**.
 
-It is designed as an on-prem compatible AI layer for Business Cube, Business One, internal documentation, FAQ, ticketing and invoice reconciliation.
+The repository name and module id are retained as technical compatibility identifiers; the public product label is **YEAH! Business**.
 
-## Role inside Astralyon OS
+## Purpose
 
-| Area | Responsibility |
-| --- | --- |
-| Quista AI | Productized assistant connected to the Quista ecosystem |
-| Business Cube | Read-only technical assistant for tables, fields, keys, relations and query examples |
-| Business One | Read-only operational connector |
-| Help desk | FAQ, ticketing and customer support automation |
-| Documents | RAG over internal documentation, manuals and procedures |
-| Reconciliation | Invoice and document matching workflows |
+The module is designed for private/on-prem-compatible business workflows with read-only access by default:
 
-## Product rule
+- internal documentation and FAQ;
+- support and ticketing;
+- read-only Business Cube access;
+- read-only Business One access;
+- document/invoice reconciliation;
+- auditable enterprise operations.
 
-This must remain a product module, not a consulting project.
+## Current implementation state
 
-The user experience must be one simple operational console:
+The repository now exposes deployable serverless contracts:
 
-- ask questions;
-- search documents;
-- open or classify tickets;
-- inspect Business Cube / Business One data through safe read-only connectors;
-- reconcile invoices;
-- view audit and source citations.
+- `GET /api/health` — authenticated module health/readiness;
+- `GET /api/capabilities` — authenticated capability discovery.
 
-## Deployment target
+Both require `x-yeah-module-token` matching `YEAH_BUSINESS_MODULE_TOKEN`.
 
-On-prem deployment coordinates, internal hostnames, shares and environment-specific network details are **not stored in the repository**. They must be supplied through protected deployment configuration and secret-management systems.
-
-The application supports a configurable base path and private network deployment without embedding internal infrastructure coordinates in source control.
-
-## Monorepo target structure
-
-```txt
-apps/
-├─ api      # NestJS/Fastify API
-├─ web      # Next.js console
-└─ worker   # ingest, cron, sync jobs
-
-packages/
-├─ agent-core
-├─ prompts
-├─ connectors
-├─ retrieval
-├─ cube-schemas
-├─ db
-├─ logger
-├─ telemetry
-└─ shared
-
-infra/
-├─ docker
-├─ k8s
-└─ ingress
-
-config/
-├─ env
-├─ nginx
-└─ policy
-```
-
-## Integration manifest
-
-This module declares its role through:
-
-```txt
-module.manifest.json
-```
-
-Astralyon OS should use the manifest to register INTIT Agent as a vertical module.
-
-## Priority roadmap
-
-1. FAQ + ticketing
-2. document RAG
-3. Business Cube schema assistant
-4. Business One read-only connector
-5. invoice reconciliation
-6. admin dashboard
-7. omnichannel support: web, mobile, WhatsApp, Teams
+The health response reports only whether dependency classes are configured; it never returns DSNs, paths, credentials or private network coordinates. Data operations are not promoted to live until a real read-only adapter is connected and verified.
 
 ## Security defaults
 
-- read-only connector access by default;
-- no sensitive data stored by default;
-- tenant isolation required;
-- every answer grounded in documents should show citations;
-- every connector call should create an audit record;
-- write actions require explicit approval;
-- internal hostnames, shares and credentials must never be committed.
+- read-only by default;
+- no public business-data operations;
+- no write actions in the current contract;
+- service-to-service module token required;
+- tenant isolation required for future data operations;
+- audit required before production data access;
+- internal network coordinates and credentials remain deployment secrets;
+- capability discovery reports configuration booleans, never secret values.
 
-## Development quickstart
+## Environment contract
 
-```bash
-pnpm i
-docker compose -f infra/docker/docker-compose.dev.yml up -d
-pnpm -r build
-pnpm -r dev
+```text
+YEAH_BUSINESS_MODULE_TOKEN
+YEAH_BUSINESS_BASE_PATH
+BUSINESS_CUBE_READONLY_DSN
+BUSINESS_ONE_READONLY_DSN
+DOCUMENT_SHARE_PATH
 ```
+
+Only configure the data-source variables that are approved for the deployment. The module should remain fail-closed when a requested adapter is not configured.
+
+## Control-plane integration
+
+YEAH! OS should register this module by its stable internal id and present it publicly as **YEAH! Business**. Production promotion requires:
+
+1. deployed HTTPS origin;
+2. verified module-token authentication;
+3. read-only adapter health;
+4. server-derived tenant context;
+5. durable audit sink;
+6. explicit query allow-lists/data boundaries;
+7. observability and incident ownership.
+
+## Product rule
+
+This is a reusable module, not a one-off consulting implementation. Customer-specific connection coordinates and credentials never belong in source control.
