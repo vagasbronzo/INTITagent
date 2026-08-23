@@ -1,0 +1,20 @@
+# Dependencies / build output
+node_modules/
+dist/
+build/
+coverage/
+.vercel/
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+.dev.vars
+.dev.vars.*
+!.dev.vars.example
+
+# Local tooling / OS
+.DS_Store
+.vscode/
+.idea/
+*.log
