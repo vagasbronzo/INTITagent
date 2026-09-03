@@ -1,0 +1,59 @@
+name: V2 Manifest and API Validation
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+  schedule:
+    - cron: "43 4 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: 22
+      - name: Validate module manifest
+        shell: bash
+        run: |
+          set -euo pipefail
+          node <<'NODE'
+          const fs = require("node:fs");
+          const manifest = JSON.parse(fs.readFileSync("module.manifest.json", "utf8"));
+          const requiredStrings = ["id", "name", "repo", "type", "owner", "status", "version"];
+          const requiredObjects = ["entrypoints", "capabilities", "data_policy", "security", "environment"];
+          for (const key of requiredStrings) {
+            if (typeof manifest[key] !== "string" || manifest[key].trim() === "") throw new Error(`Invalid manifest field: ${key}`);
+          }
+          for (const key of requiredObjects) {
+            if (manifest[key] === null || typeof manifest[key] !== "object") throw new Error(`Missing manifest control section: ${key}`);
+          }
+          console.log("Manifest structure validated.");
+          NODE
+      - name: Validate API syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -d api
+          find api -type f -name '*.js' -print0 | xargs -0 -r -n1 node --check
+      - name: Reject tracked secret artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          if git ls-files | grep -Eq '(^|/)(\.env|[^/]+\.(pem|key|p12|pfx))$'; then
+            echo "Tracked secret-bearing artifact detected. Remove it and rotate affected credentials."
+            exit 1
+          fi
+          if git grep -qEI '(AKIA[0-9A-Z]{16}|gh[pousr]_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9_-]{20,})' -- . ':!*.md'; then
+            echo "Potential hard-coded credential detected. Handle through the private rotation process."
+            exit 1
+          fi
