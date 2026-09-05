@@ -1,0 +1,4 @@
+# Security-sensitive changes require owner review when branch rules are enabled.
+/.github/ @vagasbronzo
+/scripts/security/ @vagasbronzo
+/SECURITY.md @vagasbronzo
