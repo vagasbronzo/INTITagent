@@ -37,7 +37,7 @@ jobs:
             echo "$bad"
             exit 1
           fi
-          if git grep -nEI 'dangerouslyAllowBrowser[[:space:]]*:[[:space:]]*true|VITE_(OPENAI|ANTHROPIC|GROQ|MISTRAL)_API_KEY|NEXT_PUBLIC_(OPENAI|ANTHROPIC|GROQ|MISTRAL)_API_KEY|-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----' -- '*.js' '*.jsx' '*.ts' '*.tsx' '*.mjs' '*.cjs' '*.env*' 2>/dev/null; then
+          if git grep -lEI 'dangerouslyAllowBrowser[[:space:]]*:[[:space:]]*true|VITE_(OPENAI|ANTHROPIC|GROQ|MISTRAL)_API_KEY|NEXT_PUBLIC_(OPENAI|ANTHROPIC|GROQ|MISTRAL)_API_KEY|-----BEGIN (RSA |EC |OPENSSH )?PRIVATE KEY-----' -- '*.js' '*.jsx' '*.ts' '*.tsx' '*.mjs' '*.cjs' '*.env*' 2>/dev/null; then
             echo 'Potential browser-exposed provider secret or private key pattern detected.'
             exit 1
           fi
@@ -112,3 +112,4 @@ jobs:
                   print('  ' + ' == '.join(group))
               sys.exit(1)
           print('No exact duplicate source files detected.')
+
